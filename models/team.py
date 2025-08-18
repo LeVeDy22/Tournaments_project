@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 
 from database import Base
+from .associations import tournament_teams_association
 
 
 class Team(Base):
@@ -12,3 +13,7 @@ class Team(Base):
 
     members = relationship("User", back_populates="team")
     results = relationship("TournamentResult", back_populates="team")
+
+    tournaments = relationship(
+        "Tournament", secondary=tournament_teams_association, back_populates="teams"
+    )

@@ -12,8 +12,7 @@ from models.user import User as UserModel
 import models
 from schemas import (
     user as UserSchema,
-    team as TeamSchema,
-    tournament as TournamentSchema,
+    relations as RelationsSchema,
     token as TokenSchema,
 )
 
@@ -55,16 +54,16 @@ def read_users_me(current_user: UserModel = Depends(security.get_current_user)):
     return current_user
 
 
-@app.post("/teams/", response_model=TeamSchema.Team)
+@app.post("/teams/", response_model=RelationsSchema.Team)
 def create_team(
-    team: TeamSchema.TeamCreate,
+    team: RelationsSchema.TeamCreate,
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(security.get_current_user),
 ):
     return crud.create_team(db=db, team=team)
 
 
-@app.get("/teams/", response_model=List[TeamSchema.Team])
+@app.get("/teams/", response_model=List[RelationsSchema.Team])
 def read_teams(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_teams(db, skip=skip, limit=limit)
 
@@ -83,15 +82,43 @@ def join_team(
     return crud.assign_user_to_team(db, user=current_user, team_id=team_id)
 
 
-@app.post("/tournaments/", response_model=TournamentSchema.Tournament)
+@app.post("/tournaments/", response_model=RelationsSchema.Tournament)
 def create_tournament(
-    tournament: TournamentSchema.TournamentCreate,
+    tournament: RelationsSchema.TournamentCreate,
     db: Session = Depends(get_db),
     current_user: UserModel = Depends(security.get_current_user),
 ):
     return crud.create_tournament(db=db, tournament=tournament)
 
 
-@app.get("/tournaments/", response_model=List[TournamentSchema.Tournament])
+@app.get("/tournaments/", response_model=List[RelationsSchema.Tournament])
 def read_tournaments(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return crud.get_tournaments(db, skip=skip, limit=limit)
+
+
+@app.post(
+    "/tournaments/{tournament_id}/register_team/{team_id}",
+    response_model=RelationsSchema.Tournament,
+)
+def register_team_in_tournament(
+    tournament_id: int,
+    team_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserModel = Depends(security.get_current_user),
+):
+    tournament = crud.get_tournament(db, tournament_id=tournament_id)
+    if not tournament:
+        raise HTTPException(status_code=404, detail="Tournament not found")
+
+    team = crud.get_team(db, team_id=team_id)
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    if team in tournament.teams:
+        raise HTTPException(
+            status_code=400, detail="Team is already registered for this tournament"
+        )
+
+    crud.register_team_for_tournament(db=db, team=team, tournament=tournament)
+
+    return tournament

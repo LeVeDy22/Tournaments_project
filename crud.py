@@ -1,11 +1,7 @@
 from sqlalchemy.orm import Session
 
 from models import user as UserModel, team as TeamModel, tournament as TournamentModel
-from schemas import (
-    user as UserSchema,
-    team as TeamSchema,
-    tournament as TournamentSchema,
-)
+from schemas import user as UserSchema, relations as RelationsSchema
 import security
 
 
@@ -43,7 +39,7 @@ def get_teams(db: Session, skip: int = 0, limit: int = 100):
     return db.query(TeamModel.Team).offset(skip).limit(limit).all()
 
 
-def create_team(db: Session, team: TeamSchema.TeamCreate):
+def create_team(db: Session, team: RelationsSchema.TeamCreate):
     db_team = TeamModel.Team(name=team.name)
     db.add(db_team)
     db.commit()
@@ -55,9 +51,25 @@ def get_tournaments(db: Session, skip: int = 0, limit: int = 100):
     return db.query(TournamentModel.Tournament).offset(skip).limit(limit).all()
 
 
-def create_tournament(db: Session, tournament: TournamentSchema.TournamentCreate):
+def get_tournament(db: Session, tournament_id: int):
+    return (
+        db.query(TournamentModel.Tournament)
+        .filter(TournamentModel.Tournament.id == tournament_id)
+        .first()
+    )
+
+
+def create_tournament(db: Session, tournament: RelationsSchema.TournamentCreate):
     db_tournament = TournamentModel.Tournament(**tournament.dict())
     db.add(db_tournament)
     db.commit()
     db.refresh(db_tournament)
     return db_tournament
+
+
+def register_team_for_tournament(
+    db: Session, team: TeamModel.Team, tournament: TournamentModel.Tournament
+):
+    tournament.teams.append(team)
+    db.commit()
+    return tournament

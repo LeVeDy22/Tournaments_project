@@ -11,7 +11,7 @@ from database import get_db
 import crud
 from models.user import User as UserModel
 
-SECRET_KEY = "your-super-secret-key-change-it-in-production"
+SECRET_KEY = "bimba"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
