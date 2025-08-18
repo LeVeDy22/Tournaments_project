@@ -1,29 +1,25 @@
-from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from . import models, schemas
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-def get_password_hash(password):
-    return pwd_context.hash(password)
+from models import user as UserModel, team as TeamModel, tournament as TournamentModel
+from schemas import (
+    user as UserSchema,
+    team as TeamSchema,
+    tournament as TournamentSchema,
+)
+import security
 
 
 def get_user(db: Session, user_id: int):
-    return db.query(models.User).filter(models.User.id == user_id).first()
+    return db.query(UserModel.User).filter(UserModel.User.id == user_id).first()
 
 
 def get_user_by_email(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
+    return db.query(UserModel.User).filter(UserModel.User.email == email).first()
 
 
-def get_users(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.User).offset(skip).limit(limit).all()
-
-
-def create_user(db: Session, user: schemas.UserCreate):
-    hashed_password = get_password_hash(user.password)
-    db_user = models.User(
+def create_user(db: Session, user: UserSchema.UserCreate):
+    hashed_password = security.get_password_hash(user.password)
+    db_user = UserModel.User(
         email=user.email, username=user.username, hashed_password=hashed_password
     )
     db.add(db_user)
@@ -32,13 +28,36 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 
-def create_team(db: Session, team: schemas.TeamCreate):
-    db_team = models.Team(name=team.name)
+def assign_user_to_team(db: Session, user: UserModel.User, team_id: int):
+    user.team_id = team_id
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def get_team(db: Session, team_id: int):
+    return db.query(TeamModel.Team).filter(TeamModel.Team.id == team_id).first()
+
+
+def get_teams(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(TeamModel.Team).offset(skip).limit(limit).all()
+
+
+def create_team(db: Session, team: TeamSchema.TeamCreate):
+    db_team = TeamModel.Team(name=team.name)
     db.add(db_team)
     db.commit()
     db.refresh(db_team)
     return db_team
 
 
-def get_teams(db: Session, skip: int = 0, limit: int = 100):
-    return db.query(models.Team).offset(skip).limit(limit).all()
+def get_tournaments(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(TournamentModel.Tournament).offset(skip).limit(limit).all()
+
+
+def create_tournament(db: Session, tournament: TournamentSchema.TournamentCreate):
+    db_tournament = TournamentModel.Tournament(**tournament.dict())
+    db.add(db_tournament)
+    db.commit()
+    db.refresh(db_tournament)
+    return db_tournament

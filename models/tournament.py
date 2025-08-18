@@ -1,14 +1,16 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, DateTime
 from sqlalchemy.orm import relationship
-from database import Base
 import datetime
+
+from database import Base
 
 
 class Tournament(Base):
     __tablename__ = "tournaments"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(50), index=True)
-    description = Column(String(500))
-    start_date = Column(default=datetime.datetime.utcnow)
 
-    results = relationship("Result", back_populates="tournament")
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    description = Column(String, nullable=True)
+    start_date = Column(DateTime, default=datetime.datetime.utcnow)
+
+    results = relationship("TournamentResult", back_populates="tournament")
