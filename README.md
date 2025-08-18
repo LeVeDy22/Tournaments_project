@@ -37,8 +37,8 @@
 #### 1. Клонуйте репозиторій
 
 ```bash
-git clone <github.com/LeVeDy22/Tournaments_project>
-cd <Tournaments_project>
+git clone github.com/LeVeDy22/Tournaments_project
+cd Tournaments_project
 ```
 
 #### 2. Створіть та активуйте віртуальне середовище
