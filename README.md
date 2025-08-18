@@ -37,8 +37,8 @@
 #### 1. Клонуйте репозиторій
 
 ```bash
-git clone <your-repository-url>
-cd <project-folder>
+git clone <github.com/LeVeDy22/Tournaments_project>
+cd <Tournaments_project>
 ```
 
 #### 2. Створіть та активуйте віртуальне середовище
@@ -110,12 +110,14 @@ uvicorn main:app --reload
 
 ```
 ├── /models
+│   ├── __init__.py
 │   ├── associations.py
 │   ├── result.py
 │   ├── team.py
 │   ├── tournament.py
 │   └── user.py
 ├── /schemas
+│   ├── __init__.py 
 │   ├── relations.py
 │   ├── result.py
 │   ├── token.py
